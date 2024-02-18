@@ -52,20 +52,39 @@ response1 = requests.get(search_api_server, params=search_params)
 if not response1:
     #...
     pass
+
 json_response1 = response1.json()
 
 # Получаем первую найденную организацию.
-organization = json_response1["features"][1]
+organizations = list(json_response1["features"][0:10])
+print(organizations)
+organization = organizations[0]
+points = []
+color = []
+for el in organizations:
+    try:
+        print(el["properties"]["CompanyMetaData"]["Hours"]["Availabilities"][0])
+        start = el["properties"]["CompanyMetaData"]["Hours"]["Availabilities"][0]["Intervals"][0]["from"][:2]
+        finish = el["properties"]["CompanyMetaData"]["Hours"]["Availabilities"][0]["Intervals"][0]["to"]
+        st = int(start)
+        fin = int(finish[:2])
+        color.append('pm2blm')
+    except KeyError:
+        color.append('pm2dgm')
+    except:
+        color.append('pm2grm')
+
+
+    point1 = el["geometry"]["coordinates"]
+    org_point = "{0},{1}".format(point1[0], point1[1])
+    points.append(org_point)
 # Название организации.
 org_name = organization["properties"]["CompanyMetaData"]["name"]
 # Адрес организации.
 org_address = organization["properties"]["CompanyMetaData"]["address"]
 
 # Получаем координаты ответа.
-point1 = organization["geometry"]["coordinates"]
-print(point1)
-org_point = "{0},{1}".format(point1[0], point1[1])
-delta = "0.005"
+
 
 
 
@@ -85,7 +104,9 @@ map_params = {
  #   "ll": ",".join([str(point1[0]), str(point1[1])]),
    # "spn": ",".join([str(delta[0]), str(delta[1])]),
     "l": "map",
-    "pt": f"{toponym_longitude},{toponym_lattitude},pm2rdm~{org_point},pm2dgl"
+    "pt": f"{toponym_longitude},{toponym_lattitude},pm2rdm~{points[0]},{color[0]}~{points[1]},{color[1]}~{points[2]},{color[2]}"
+          f"~{points[3]},{color[3]}~{points[4]},{color[4]}~{points[5]},{color[5]}~{points[6]},{color[6]}~{points[7]},{color[7]}"
+          f"~{points[8]},{color[8]}~{points[9]},{color[9]}"
 }
 
 map_api_server = "http://static-maps.yandex.ru/1.x/"
